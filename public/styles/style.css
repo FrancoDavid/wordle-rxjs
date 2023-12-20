@@ -57,14 +57,17 @@ section {
 
 .square-success {
     background-color: green;
+    font-weight: bolder;
 }
 
 .square-error {
     background-color: gray;
+    font-weight: bolder;
 }
 
 .square-warning {
-    background-color: yellow;
+    background-color: #cccc56;
+    font-weight: bolder;
 }
 
 footer {
