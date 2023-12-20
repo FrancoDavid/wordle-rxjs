@@ -6,6 +6,7 @@ const  { filter, map, takeWhile } = require("rxjs/operators");
 export class WordleGame {
 
     onKeyDown$;
+    
     attemps;
     maxAttempts;
     inputWords;
