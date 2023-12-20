@@ -1,0 +1,13 @@
+.square {
+    width: 70px;
+    height: 70px;
+}
+
+header {
+    font-size: 2rem;
+}
+
+footer button {
+    width: 366px;
+    font-size: 2rem;
+}
