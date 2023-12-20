@@ -5,7 +5,6 @@ export class Word {
 
     constructor() {
         this.word = this.assign();
-        console.log(this.word);
     }
 
     assign() {

@@ -1,7 +1,7 @@
 import { fromEvent } from "rxjs";
-import { filter, map, takeWhile, tap } from "rxjs/operators";
+import { filter, map } from "rxjs/operators";
 
-import { Wordle } from "./wordle-game";
+import { Wordle } from "./wordle";
 
 
 export class View {

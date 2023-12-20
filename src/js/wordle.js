@@ -1,203 +1,104 @@
-import { WORDS } from "./words";
+import { Board } from "./board";
+import { Paragraph } from "./paragraph";
+import { Word } from "./word";
 
-const { fromEvent } = require("rxjs");
-const  { filter, map, takeWhile } = require("rxjs/operators");
+export class Wordle {
 
-export class WordleGame {
-
-    onKeyDown$;
+    userAttempts;
+    userMaxAttempts;
+    userMaxLetters;
+    userLetters;
     
-    attemps;
-    maxAttempts;
-    inputWords;
-    maxLetters;
-    correctWord;
-    messageElement;
-    stateWinner;
-    resetButton;
-    onClickReset$;
+    isWinner;
+
+    paragraph;
+    board;
+
+    wordCorrect;
 
     constructor() {
-        this.onKeyDown$ = fromEvent(document, "keydown");
-        this.attemps = 0;
-        this.maxAttempts = 6;
-        this.inputWords = [];
-        this.maxLetters = 5;
-        this.correctWord = WORDS.words[Math.floor(Math.random() * 26)].toUpperCase();
-        this.messageElement = document.querySelector("h2");
-        this.stateWinner = false;
-        this.resetButton = document.querySelector("button");
-        this.onClickReset$ = fromEvent(document.querySelector("button"), "click");
-    };
+        this.userAttempts = 0;
+        this.userMaxAttempts = 6;
+        this.userMaxLetters = 5;
 
-    oninit() {
-        console.log("oninit", this.correctWord);
-        this.presskey();
-        this.cleanwords();
-        this.verificationwords();
-        this.onreset();
+        this.isWinner = false;
+
+        this.userLetters = [];
+
+        this.paragraph = new Paragraph();
+        this.board = new Board();
+        this.wordCorrect = new Word();
     }
 
-    presskey() {
-        let this$ = this;
-
-        this.onKeyDown$
-            .pipe(
-                filter(function(event) {
-                    return (event.key.length === 1 && event.key.match(/[a-z]/i));
-                }),
-                map(function(event) {
-                    return event.key.toUpperCase();
-                }),
-                takeWhile(function() { 
-                    return (this$.attemps < this$.maxAttempts) && !this$.stateWinner;
-                })
-            )
-            .subscribe({
-                next: function (result) {
-                    const positionxInput = this$.inputWords.length;
-                    const positionyInput = this$.attemps;
-
-                
-                    if (positionxInput < this$.maxLetters) {
-                        const rows = document.querySelectorAll(".row");
-                        const rowInput = rows[positionyInput].children[positionxInput];
-                        
-                        rowInput.textContent = result;
-                        this$.inputWords.push(result);
-                    }
-                    
-                    this$.messageElement.textContent = "";
-                }
-            });
+    whriteBoard(letter) {
+        if (this.stillMissingLetters()) {
+            this.userLetters.push(letter);
+            
+            this.board.writeSquare(this.userAttempts, this.userLetters.length - 1, letter);
+            this.paragraph.clean();
+        }
     }
 
-    cleanwords() {
-        let this$ = this;
-        this.onKeyDown$
-            .pipe(
-                filter(function(event) {
-                    return event.key === "Backspace";
-                }),
-                takeWhile(function() { 
-                    return (this$.attemps < this$.maxAttempts) && !this$.stateWinner;
-                })
-            )
-            .subscribe({
-                next: function () {
-
-                    const positionxInput = this$.inputWords.length - 1;
-                    const positionyInput = this$.attemps;
-
-                    if (this$.inputWords.length > 0) {
-                        const rows = document.querySelectorAll(".row");
-                        const rowInput = rows[positionyInput].children[positionxInput];
-                        console.log(rowInput);
-                        rowInput.textContent = '';
-                        this$.inputWords.pop();
-                    }
-                }
-            })
+    deleteBoard() {
+        if (this.stillExistsLetters()) {
+            this.userLetters.pop();
+            this.board.deleteSquare(this.userAttempts, this.userLetters.length);
+        }
     }
 
-    verificationwords() {
-        const this$ = this;
-        this.onKeyDown$
-            .pipe(
-                filter(function(event) {
-                    return event.key === "Enter";
-                }),
-                takeWhile(function() { 
-                    return (this$.attemps < this$.maxAttempts) && !this$.stateWinner;
-                })
-            )
-            .subscribe({
-                next: function() {
-
-                    const word = this$.inputWords.join("");
-
-                    if (this$.inputWords.length < this$.maxLetters) {
-                        this$.messageElement.textContent = `Your missing ${this$.maxLetters - this$.inputWords.length} letters`;
-                        return;
-                    }
-
-                    if (word === this$.correctWord) {
-
-                        const positionxInput = this$.inputWords.length;
-                        const positionyInput = this$.attemps;
-
-                        const rows = document.querySelectorAll(".row");
-
-                        for (let i = 0; i < positionxInput; i++) {
-                            const rowInput = rows[positionyInput].children[i];
-
-                            rowInput.classList.add("square-success")
-                        }
-
-                        this$.messageElement.textContent = "Congratulations you won!";
-                        this$.stateWinner = true;
-
-                    } else {
-                        const positionyInput = this$.attemps;
-
-                        const rows = document.querySelectorAll(".row");
-                        const correctWordArray = this$.correctWord.split("");
-
-                        for (let i = 0; i < this$.inputWords.length; i++) {
-                            if (correctWordArray.includes(this$.inputWords[i])) {
-                                if (this$.inputWords[i] === correctWordArray[i]) {
-                                    const rowInput = rows[positionyInput].children[i];
-                                    rowInput.classList.add("square-success");
-                                } else {
-                                    const rowInput = rows[positionyInput].children[i];
-                                    rowInput.classList.add("square-warning");
-                                }
-                            
-                            } else {
-                                const rowInput = rows[positionyInput].children[i];
-                                rowInput.classList.add("square-error");
-                            }
-                        }
-
-                        this$.inputWords.length = 0;
-                        this$.attemps++;
-
-
-                        if (this$.attemps >= this$.maxAttempts) {
-                            this$.messageElement.textContent = "You lost, You have exhausted your attempts";
-                        }
-                    }
-
-                }
-            });
+    continueGame() {
+        return (this.userAttempts < this.userMaxAttempts) && !this.isWinner;  
     }
 
-    onreset() {
-        const this$ = this;
-        this.onClickReset$
-            .subscribe({
-                next: function() {
-
-                    const rows = document.querySelectorAll(".row");
-
-                    for (let y = 0; y < this$.maxAttempts; y++) {
-                        const row = rows[y];
-                        for (let x = 0; x < row.children.length; x++) {
-                            const square = row.children[x];
-                            square.textContent = "";
-                            square.classList.remove("square-success", "square-error", "square-warning");
-                        }
-                    }
-
-                    this$.attemps = 0;
-                    this$.inputWords.length = 0;
-                    this$.messageElement.textContent = "";
-                    this$.stateWinner = false;
-                    this$.correctWord = WORDS.words[Math.floor(Math.random() * 26)].toUpperCase();
-
-                    this$.resetButton.blur();
-                }
-            });
+    stillMissingLetters() {
+        return this.userLetters.length < this.userMaxLetters;
     }
 
+    stillExistsLetters() {
+        return this.userLetters.length > 0;
+    }
+
+    turnsOver() {
+        return this.userAttempts >= this.userMaxAttempts;
+    }
+
+    endGame() {
+        
+        if (this.stillMissingLetters()) {
+            this.paragraph.updated(`Your missing ${this.userMaxLetters - this.userLetters.length} letters`);
+            return;
+        }
+
+        if (this.wordCorrect.verication(this.userLetters.join(""))) {
+
+            this.board.paintSquareWinner(this.userAttempts, this.userLetters.length);
+            this.paragraph.updated("Congratulations you won!");
+            this.isWinner = true;
+
+        } else {
+            
+            const correctWordArray = this.wordCorrect.word.split("");
+
+            this.board.paintSquareLoser(this.userAttempts, this.userLetters, correctWordArray);
+
+            this.userLetters.length = 0;
+            this.userAttempts++;
+
+            if (this.turnsOver()) {
+                this.paragraph.updated("You lost, You have exhausted your attempts");
+            }
+        }
+    }
+
+    resetGame() {
+        this.board.cleanSquares(this.userMaxAttempts);
+        this.paragraph.clean();
+
+        this.userAttempts = 0;
+        this.userLetters.length = 0;
+
+        this.isWinner = false;
+
+        this.wordCorrect.reset();
+    }
 }
