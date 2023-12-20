@@ -17,7 +17,7 @@ body {
 header {
     display: flex;
     justify-content: center;
-    margin: 24px auto;
+    margin: 20px auto;
 
     font-size: 1rem;
 }
@@ -27,12 +27,14 @@ section {
     min-width: 300px;
     height: auto;
     padding: 16px;
+
+    text-align: center;
 }
 
 .column {
     display: flex;
     justify-content: center;
-    margin: 8px auto;
+    margin: 10px auto;
 }
 
 .row {
@@ -51,6 +53,18 @@ section {
     font-size: 3rem;
 
     text-align: center;
+}
+
+.square-success {
+    background-color: green;
+}
+
+.square-error {
+    background-color: gray;
+}
+
+.square-warning {
+    background-color: yellow;
 }
 
 footer {

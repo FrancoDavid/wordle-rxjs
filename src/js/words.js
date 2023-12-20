@@ -1,0 +1,30 @@
+export const WORDS = {
+    "words": [
+        "apple",
+        "blend",
+        "crane",
+        "darts",
+        "excel",
+        "flame",
+        "grape",
+        "hello",
+        "image",
+        "jumbo",
+        "kiwi",
+        "lemon",
+        "mango",
+        "never",
+        "ocean",
+        "piano",
+        "queen",
+        "rider",
+        "smile",
+        "table",
+        "umbra",
+        "vivid",
+        "water",
+        "xerox",
+        "young",
+        "zebra"
+      ]
+};
